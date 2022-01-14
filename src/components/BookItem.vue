@@ -32,52 +32,51 @@
 
       <div class="popup-body">
         <h2>{{ title }}</h2>
-        <div class="form">
-          <input
-            v-model="name"
-            type="text"
-            class="name input"
-            placeholder="Имя"
-          />
-          <input
-            v-model="email"
-            type="email"
-            class="email input"
-            placeholder="Em@il"
-          />
-          <input
-            v-model="phone"
-            type="text"
-            class="phone input"
-            placeholder="+380..."
-          />
-        </div>
-      </div>
-      <div class="popup-footer">
-        <button type="submit" class="btn-form" @click="addToCart">
-          {{ btnSend }}
-        </button>
-        <button class="btn-form close" @click="popupClose">Закрыть</button>
+        <form id="app" @submit="checkForm" method="post" novalidate="true">
+					<p v-if="errors.length"><b>Пожалуйста исправьте указанные ошибки:</b>
+						<ul>
+							<li v-for="(error, id) in errors" :key="id">{{ error }}</li>
+						</ul>
+					</p>
+					<p>
+						<label for="name"></label>
+						<input id="name" v-model="name" type="text" placeholder="Имя" class="name input">
+					</p>
+					<p>
+						<label for="email"></label>
+						<input id="email" v-model="email" type="email" placeholder="Em@il" class="name input">
+					</p>
+					<p>
+						<label for="phone"></label>
+						<input id="phone" v-model="phone" type="text" placeholder="+380..." class="name input">
+					</p>
+					<input type="submit" class="btn-form" value="Отправить" :disabled='!isComplete' @click="addToCart">
+					<button class="btn-form close" @click="popupClose">Закрыть</button>
+        </form>
       </div>
     </div>
   </div>
 </template>
 
 <script>
+import { eventBus } from '../main'
+
 export default {
   name: "BookItem",
   components: {},
   data() {
     return {
+      errors: [],
+      name: null,
+      email: null,
+      phone: null,
+
       showModal: false,
       buttonName: "Заказать",
       descriptionBook: "Описание книги",
 
       title: "Форма заказа",
       btnSend: "Отправить",
-      name: "",
-      email: "",
-      phone: "",
     };
   },
   props: {
@@ -87,15 +86,52 @@ export default {
     },
   },
   methods: {
+		checkForm(e) {
+      this.errors = [];
+      if (!this.name) {
+        this.errors.push('Укажите имя');
+      }
+      if (!this.email) {
+        this.errors.push('Укажите электронную почту');
+      } else if (!this.validEmail(this.email)) {
+        this.errors.push('Укажите корректный адрес электронной почты');
+      }
+			if (!this.phone) {
+        this.errors.push('Введите номер телефона');
+      } else if (!this.validPhone(this.phone)) {
+        this.errors.push('Укажите корректный номер телефона');
+      }
+      if (!this.errors.length) {
+        return true;
+      }
+      e.preventDefault();
+    },
+		validEmail(email) {
+      var re = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+      return re.test(email);
+    },
+		validPhone(phone) {
+      var re = /^\+380\d{9}$/;
+      return re.test(phone);
+    },
     popupShow() {
       this.showModal = true;
     },
     popupClose() {
       this.showModal = false;
     },
+		// showMiniPopup() {
+		// 	alert('hi');
+		// },
     addToCart() {
-      console.log(this.book);
-      this.$emit("addToCart", this.book);
+			eventBus.$emit('priseInfo', {
+				img: this.volumeInfo.imageLinks.thumbnail,
+				description: this.volumeInfo.description,
+				sale: this.saleInfo.listPrice.amount,
+			});
+      // this.$emit("addToCart", this.book);
+			// this.showMiniPopup();
+			this.checkForm();
       this.popupClose();
     },
   },
@@ -105,6 +141,9 @@ export default {
     },
 		saleInfo() {
       return this.book.saleInfo;
+    },
+		isComplete () {
+      return this.name && this.email && this.phone;
     },
   },
 };

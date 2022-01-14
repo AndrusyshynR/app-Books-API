@@ -26,19 +26,19 @@
     <div class="content">
       <BookList :books="books" />
     </div>
-		<Cart @addToCart="addToCart" />
+    <!-- <Cart /> -->
   </div>
 </template>
 
 <script>
 import BookList from "@/components/BookList";
-import Cart from "@/components/Cart";
+// import Cart from "@/components/Cart";
 import axios from "axios";
 
 export default {
   components: {
     BookList,
-    Cart,
+    // Cart,
   },
   data() {
     return {
@@ -60,9 +60,6 @@ export default {
         });
       this.nameBook = "";
     },
-		addToCart() {
-			
-		},
   },
 };
 </script>
@@ -101,19 +98,6 @@ html {
 .content {
   position: relative;
 }
-
-/* Loader: shamelessly taken from https://codepen.io/veganben/pen/GAgsH */
-/* .loading {
-  height: 0;
-  width: 0;
-  padding: 15px;
-  border: 6px solid #ccc;
-  border-right-color: #2c3e50;
-  border-radius: 22px;
-  position: absolute;
-  left: 50%;
-  top: 0;
-} */
 
 .input {
   border: 1px solid #000;
